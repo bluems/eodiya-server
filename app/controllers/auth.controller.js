@@ -85,3 +85,41 @@ exports.signin = (req, res) => {
       res.status(500).send({ message: err.message });
     });
 };
+
+exports.refreshToken = (req, res) => {
+  User.findOne({
+    where: {
+      username: req.body.username
+    }
+  })
+    .then(user => {
+      if(!user) {
+        return res.status(404).send({ message: "User Not found." });
+      }
+
+      if(user.id != req.userId) {
+        return res.status(500).send({ message: "User mismatch."});
+      }
+
+      var token = jwt.sign({ id: user.id }, config.secret, {
+        expiresIn: 86400
+      });
+
+      var authorities = [];
+      user.getRoles().then(roles => {
+        for (let i = 0; i < roles.length; i++) {
+          authorities.push("ROLE_" + roles[i].name.toUpperCase());
+        }
+        res.status(200).send({
+          id: user.id,
+          username: user.username,
+          nickname: user.nickname,
+          roles: authorities,
+          accessToken: token
+        });
+      });
+    })
+    .catch(err => {
+      res.status(500).send({ message: err.message });
+    });
+};
