@@ -11,6 +11,7 @@ module.exports = function(app) {
   });
 
   app.get("/api/test/all", controller.allAccess);
+  app.post("/api/test/all", controller.allAccess);
 
   app.get(
     "/api/test/user",
