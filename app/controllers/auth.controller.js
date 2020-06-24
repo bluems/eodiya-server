@@ -25,18 +25,18 @@ exports.signup = (req, res) => {
           }
         }).then(roles => {
           user.setRoles(roles).then(() => {
-            res.send({ message: "User registered successfully!" });
+            res.send({ code: "OK", message: "User registered successfully!" });
           });
         });
       } else {
         // user role = 1
         user.setRoles([1]).then(() => {
-          res.send({ message: "User registered successfully!" });
+          res.send({ code: "OK", message: "User registered successfully!" });
         });
       }
     })
     .catch(err => {
-      res.status(500).send({ message: err.message });
+      res.status(500).send({ code: "500", message: err.message });
     });
 };
 
@@ -48,7 +48,7 @@ exports.signin = (req, res) => {
   })
     .then(user => {
       if (!user) {
-        return res.status(404).send({ message: "User Not found." });
+        return res.status(404).send({ code: "404", message: "User Not found." });
       }
 
       var passwordIsValid = bcrypt.compareSync(
@@ -73,10 +73,8 @@ exports.signin = (req, res) => {
           authorities.push("ROLE_" + roles[i].name.toUpperCase());
         }
         res.status(200).send({
-          id: user.id,
           username: user.username,
           nickname: user.nickname,
-          roles: authorities,
           accessToken: token
         });
       });
@@ -94,11 +92,11 @@ exports.refreshToken = (req, res) => {
   })
     .then(user => {
       if(!user) {
-        return res.status(404).send({ message: "User Not found." });
+        return res.status(404).send({ code: "404", message: "User Not found." });
       }
 
       if(user.id != req.userId) {
-        return res.status(500).send({ message: "User mismatch."});
+        return res.status(500).send({ code: "500", message: "User mismatch."});
       }
 
       var token = jwt.sign({ id: user.id }, config.secret, {
@@ -111,15 +109,13 @@ exports.refreshToken = (req, res) => {
           authorities.push("ROLE_" + roles[i].name.toUpperCase());
         }
         res.status(200).send({
-          id: user.id,
           username: user.username,
           nickname: user.nickname,
-          roles: authorities,
           accessToken: token
         });
       });
     })
     .catch(err => {
-      res.status(500).send({ message: err.message });
+      res.status(500).send({ code:"500", message: err.message });
     });
 };
